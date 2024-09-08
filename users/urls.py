@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from .views import RegisterView, LoginView
 
 urlpatterns = [
-    # Позже добавите сюда маршруты для работы с пользователями
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', LoginView.as_view(), name='login'),
 ]
