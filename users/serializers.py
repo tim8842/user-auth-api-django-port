@@ -2,20 +2,21 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import AbstractUser
-
+from .models import Profile
+from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'name']
+        fields = ['email', 'name', "created_at", "updated_at"]
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'name', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['email', 'name', 'password', "created_at", "updated_at"]
+        extra_kwargs = {'password': {'write_only': True, 'validators': [validate_password]}}
 
     def create(self, validated_data: dict) -> AbstractUser:
         user = User.objects.create_user(
@@ -41,3 +42,29 @@ class LoginSerializer(serializers.Serializer):
                 'access': str(refresh.access_token),
             }
         raise serializers.ValidationError('Invalid credentials')
+    
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["bio", "phone_number", "profile_picture", "location", "created_at", "updated_at"]
+        
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['bio', 'phone_number', 'profile_picture', 'location', "created_at", "updated_at"]
+        
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, validators=[validate_password])
+
+    def validate_old_password(self, value: str) -> str:
+        user: AbstractUser = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError('Old password is incorrect.')
+        return value
+
+    def save(self, **kwargs) -> AbstractUser:
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user
