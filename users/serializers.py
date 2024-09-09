@@ -4,6 +4,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import AbstractUser
 from .models import Profile
 from django.contrib.auth.password_validation import validate_password
+from .tasks import send_registration_email
 
 User = get_user_model()
 
@@ -25,6 +26,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             name=validated_data['name'],
             password=validated_data['password']
         )
+        send_registration_email(validated_data['email'])
         return user
 
 class LoginSerializer(serializers.Serializer):
