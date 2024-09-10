@@ -87,17 +87,19 @@ jobs:
 
     - name: Install Yandex CLI
       run: |
-        curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-        export PATH=$PATH:$HOME/.local/bin  # Добавьте путь к yc в PATH
+        curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
+
+    - name: Add `yc` to PATH
+      run: |
+        echo "PATH=$PATH:$HOME/.local/bin" >> $GITHUB_ENV
+        source $GITHUB_ENV  # Обновление переменной PATH
 
     - name: Verify yc installation
       run: |
-        export PATH=$PATH:$HOME/.local/bin
         yc --version  # Проверка установки yc
 
     - name: Authenticate Docker with Yandex Cloud Container Registry
       run: |
-        export PATH=$PATH:$HOME/.local/bin
         yc container registry configure-docker
     
     - name: Push Docker images to Yandex Cloud
