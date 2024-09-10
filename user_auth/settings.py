@@ -14,6 +14,21 @@ from datetime import timedelta
 from pathlib import Path
 from decouple import config, Config
 import os
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn=config('DSN'),
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for tracing.
+    integrations=[DjangoIntegration()],
+    traces_sample_rate=1.0,
+    send_default_pii=True,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -163,6 +178,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',  # Ограничение запросов для аутентифицированных пользователей
+        'rest_framework.throttling.AnonRateThrottle',  # Ограничение запросов для анонимных пользователей
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '50/minute',  
+        'anon': '10/minute',  
+    }
 }
 
 SIMPLE_JWT = {
