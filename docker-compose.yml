@@ -1,6 +1,7 @@
 
 services:
   web:
+    image: nu-web:latest
     build: .
     command: sh -c "python manage.py collectstatic --noinput && gunicorn --workers=3 user_auth.wsgi:application --bind 0.0.0.0:8000"
     volumes:
@@ -16,6 +17,7 @@ services:
       - beat
 
   nginx:
+    image: nu-nginx-web:latest
     build:
       context: .
       dockerfile: Dockerfile.nginx
@@ -32,6 +34,7 @@ services:
       - "6379:6379"
 
   worker:
+    image: nu-nginx-celery-worker:latest
     build: .
     command: celery -A user_auth worker --loglevel=info
     volumes:
@@ -42,6 +45,7 @@ services:
       - redis
 
   beat:
+    image: nu-nginx-beat-worker:latest
     build: .
     command: celery -A user_auth beat --loglevel=info
     volumes:
