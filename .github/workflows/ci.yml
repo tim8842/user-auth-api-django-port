@@ -85,21 +85,15 @@ jobs:
         docker tag nu-nginx-beat-worker:latest cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${COMMIT_SHA}
         docker tag nu-nginx-celery-worker:latest cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${COMMIT_SHA}
 
-    - name: Install Zsh
-      run: |
-        sudo apt-get install -y zsh
-
     - name: Install Yandex CLI
       run: |
         curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-
-    - name: Set up Zsh and update PATH
-      run: |
-        echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.zshrc
-        source ~/.zshrc
+        source ~/.bashrc
+        yc init --token ${{ secrets.YC_OAUTH_TOKEN }} --cloud-id ${{ secrets.YC_CLOUD_ID }} --folder-id ${{ secrets.YC_FOLDER_ID }}
 
     - name: Authenticate Docker with Yandex Cloud Container Registry
       run: |
+        source ~/.bashrc
         yc container registry configure-docker
     
     - name: Push Docker images to Yandex Cloud
