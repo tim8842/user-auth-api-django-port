@@ -74,10 +74,10 @@ CORS_ALLOWED_ORIGINS = [
     'https://sub.example.com',
 ]
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # URL для подключения к Redis
+CELERY_BROKER_URL = 'redis://redis:6379/0'  # URL для подключения к Redis 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0' # 'redis://redis:6379/0' для докера
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 ROOT_URLCONF = "user_auth.urls"
