@@ -33,6 +33,16 @@ jobs:
         . venv/bin/activate
         pip install --upgrade pip
         pip install -r requirements.txt
+    
+    - name: Set environment variables from GitHub Secrets
+      run: |
+        echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> .env
+        echo "EMAIL_PORT=${{ secrets.EMAIL_PORT }}" >> .env
+        echo "EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}" >> .env
+        echo "EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}" >> .env
+        echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
+        echo "DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}" >> .env
+        echo "DEFAULT_FROM_EMAIL=${{ secrets.SECRET_KEY }}" >> .env
 
     - name: Run tests
       run: |
