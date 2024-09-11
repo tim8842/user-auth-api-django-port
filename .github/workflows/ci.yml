@@ -98,10 +98,15 @@ jobs:
 
 
       
-    - name: Yc Init
+    - name: Configure Yandex Cloud CLI
       run: |
-        /home/runner/yandex-cloud/bin/yc init --token ${{ secrets.YC_OAUTH_TOKEN }} --cloud-id ${{ secrets.YC_CLOUD_ID }} --folder-id ${{ secrets.YC_FOLDER_ID }}
+          /home/runner/yandex-cloud/bin/yc config set token ${{ secrets.YC_OAUTH_TOKEN }}
+          /home/runner/yandex-cloud/bin/yc config set cloud-id ${{ secrets.YC_CLOUD_ID }}
+          /home/runner/yandex-cloud/bin/yc config set folder-id ${{ secrets.YC_FOLDER_ID }}
 
+    - name: Run Yandex CLI command
+      run: |
+          /home/runner/yandex-cloud/bin/yc compute instance list
     - name: Authenticate Docker with Yandex Cloud Container Registry
       run: |
         /home/runner/yandex-cloud/bin/yc container registry configure-docker
@@ -112,5 +117,5 @@ jobs:
         docker cr.yandex/${{ secrets.YC_CR_ID }}/nginx-image:${COMMIT_SHA}
         docker cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${COMMIT_SHA}
         docker cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${COMMIT_SHA}
-        
+
     
