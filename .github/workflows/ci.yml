@@ -131,21 +131,33 @@ jobs:
     
     - name: Login to Yandex Container Registry from ssh
       run: echo ${{ secrets.YC_OAUTH_TOKEN }} | sudo docker login -u oauth --password-stdin cr.yandex/${{ secrets.YC_CR_ID }}
-      
-    - name: Clean docker
+
+    - name: Stop containers
       run: |
         if [ "$(sudo docker ps -q)" ]; then
           sudo docker kill $(sudo docker ps -q) &> /dev/null
         fi
+
+    - name: Remove containers
+      run: |
         if [ "$(sudo docker ps -a -q)" ]; then
           sudo docker rm $(sudo docker ps -a -q) &> /dev/null
         fi
+
+    - name: Remove images
+      run: |
         if [ "$(sudo docker images -q)" ]; then
           sudo docker rmi $(sudo docker images -q) &> /dev/null
         fi
+
+    - name: Remove volumes
+      run: |
         if [ "$(sudo docker volume ls -q)" ]; then
           sudo docker volume rm $(sudo docker volume ls -q) &> /dev/null
         fi
+
+    - name: Remove networks
+      run: |
         if [ "$(sudo docker network ls -q)" ]; then
           sudo docker network rm $(sudo docker network ls -q) &> /dev/null
         fi
