@@ -91,8 +91,10 @@ jobs:
       
     - name: Console output
       run: |
-        cd /home/runner/yandex-cloud/bin
-        yc
+
+        ls /home/runner/yandex-cloud/bin
+        chmod +x /home/runner/yandex-cloud/bin/yc
+        /home/runner/yandex-cloud/bin/yc --help
 
 
       
