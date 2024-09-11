@@ -79,7 +79,6 @@ jobs:
 
     - name: Tag Docker images for Yandex Cloud
       run: |
-        COMMIT_SHA=${{ github.sha }}
         docker tag nu-web:latest cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${COMMIT_SHA}
         docker tag nu-nginx-web:latest cr.yandex/${{ secrets.YC_CR_ID }}/nginx-image:${COMMIT_SHA}
         docker tag nu-nginx-beat-worker:latest cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${COMMIT_SHA}
@@ -113,9 +112,9 @@ jobs:
     
     - name: Push Docker images to Yandex Cloud
       run: |
-        docker push cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${COMMIT_SHA}
-        docker push cr.yandex/${{ secrets.YC_CR_ID }}/nginx-image:${COMMIT_SHA}
-        docker push cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${COMMIT_SHA}
-        docker push cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${COMMIT_SHA}
+        docker push cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }}
+        docker push cr.yandex/${{ secrets.YC_CR_ID }}/nginx-image:${{ github.sha }}
+        docker push cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${{ github.sha }}
+        docker push cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }}
 
     
