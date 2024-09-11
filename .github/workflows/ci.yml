@@ -91,7 +91,7 @@ jobs:
       
     - name: Console output
       run: |
-        echo 'source "/home/runner/.bashrc"'
+        find / -name '*yandex-cloud*' 2>/dev/null
 
       
     - name: Yc Init
