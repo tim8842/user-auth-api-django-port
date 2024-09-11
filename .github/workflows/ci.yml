@@ -79,10 +79,10 @@ jobs:
 
     - name: Tag Docker images for Yandex Cloud
       run: |
-        docker tag nu-web:latest cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${COMMIT_SHA}
-        docker tag nu-nginx-web:latest cr.yandex/${{ secrets.YC_CR_ID }}/nginx-image:${COMMIT_SHA}
-        docker tag nu-nginx-beat-worker:latest cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${COMMIT_SHA}
-        docker tag nu-nginx-celery-worker:latest cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${COMMIT_SHA}
+        docker tag nu-web:latest cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }}
+        docker tag nu-nginx-web:latest cr.yandex/${{ secrets.YC_CR_ID }}/nginx-image:${{ github.sha }}
+        docker tag nu-nginx-beat-worker:latest cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${{ github.sha }}
+        docker tag nu-nginx-celery-worker:latest cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }}
 
     - name: Install Yandex CLI
       run: |
