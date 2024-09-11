@@ -94,8 +94,6 @@ jobs:
         ls /home/runner/yandex-cloud/bin
         chmod +x /home/runner/yandex-cloud/bin/yc
         /home/runner/yandex-cloud/bin/yc --help
-
-
       
     - name: Configure Yandex Cloud CLI
       run: |
@@ -110,7 +108,11 @@ jobs:
     - name: Authenticate Docker with Yandex Cloud Container Registry
       run: |
         /home/runner/yandex-cloud/bin/yc container registry configure-docker
+
+    - name: Login to Yandex Container Registry
+      run: echo ${{ secrets.YC_OAUTH_TOKEN }} | docker login -u oauth --password-stdin cr.yandex/${{ secrets.YC_CR_ID }}
     
+      
     - name: Push Docker images to Yandex Cloud
       run: |
         docker push cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }}
