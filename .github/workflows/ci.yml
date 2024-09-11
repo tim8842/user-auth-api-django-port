@@ -187,10 +187,10 @@ jobs:
       run: sudo docker run -d --name worker --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }} celery -A user_auth worker --loglevel=info
 
     - name: Beat
-      run: sudo docker run -d --name beat --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${{ github.sha }} -A user_auth beat --loglevel=info
+      run: sudo docker run -d --name beat --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${{ github.sha }} celery -A user_auth beat --loglevel=info
 
     - name: Web
       run: sudo docker run -d --name web --mount source=static_data,target=/app/staticfiles -p 8000:8000 --env-file .env docker push cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }} sh -c "python manage.py collectstatic --noinput && gunicorn --workers=3 user_auth.wsgi:application --bind 0.0.0.0:8000"
-      
+
     - name: Nginx
       run: sudo docker run -d --name nginx --mount source=static_data,target=/app/staticfiles -p 80:80 cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }}
