@@ -130,8 +130,10 @@ jobs:
         port: 22
     
     - name: Login to Yandex Container Registry from ssh
+      run: echo ${{ secrets.YC_OAUTH_TOKEN }} | sudo docker login -u oauth --password-stdin cr.yandex/${{ secrets.YC_CR_ID }}
+      
+    - name: Clean docker
       run: |
-        echo ${{ secrets.YC_OAUTH_TOKEN }} | sudo docker login -u oauth --password-stdin cr.yandex/${{ secrets.YC_CR_ID }}
         if [ "$(sudo docker ps -q)" ]; then
           sudo docker kill $(sudo docker ps -q) &> /dev/null
         fi
