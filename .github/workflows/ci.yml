@@ -91,7 +91,9 @@ jobs:
       
     - name: Console output
       run: |
-        find / -name '*yandex-cloud*' 2>/dev/null
+        cd /home/runner/yandex-cloud/bin
+        yc
+
 
       
     - name: Yc Init
