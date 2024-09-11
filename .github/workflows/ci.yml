@@ -147,7 +147,7 @@ jobs:
     - name: Remove images
       run: |
         if [ "$(sudo docker images -q)" ]; then
-          sudo docker rmi $(sudo docker images -q) &> /dev/null
+          sudo docker rmi -f $(sudo docker images -q) &> /dev/null
         fi
 
     - name: Remove volumes
