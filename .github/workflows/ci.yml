@@ -194,3 +194,4 @@ jobs:
 
     - name: Nginx
       run: sudo docker run -d --name nginx --mount source=static_data,target=/app/staticfiles -p 80:80 cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }}
+      
