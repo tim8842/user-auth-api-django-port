@@ -57,3 +57,32 @@ services:
   
 volumes:
   static_data:
+
+# docker volume create static_data
+
+# # Запуск контейнеров
+# docker run -d --name redis -p 6379:6379 redis:alpine && \
+# docker run -d \
+#   --name worker \
+#   --mount source=static_data,target=/app/staticfiles \
+#   --env-file .env \
+#   nu-nginx-celery-worker:latest \
+#   celery -A user_auth worker --loglevel=info && \
+# docker run -d \
+#   --name beat \
+#   --mount source=static_data,target=/app/staticfiles \
+#   --env-file .env \
+#   nu-nginx-beat-worker:latest \
+#   celery -A user_auth beat --loglevel=info && \
+# docker run -d \
+#   --name web \
+#   --mount source=static_data,target=/app/staticfiles \
+#   -p 8000:8000 \
+#   --env-file .env \
+#   nu-web:latest \
+#   sh -c "python manage.py collectstatic --noinput && gunicorn --workers=3 user_auth.wsgi:application --bind 0.0.0.0:8000" && \
+# docker run -d \
+#   --name nginx \
+#   --mount source=static_data,target=/app/staticfiles \
+#   -p 80:80 \
+#   nu-nginx-web:latest
