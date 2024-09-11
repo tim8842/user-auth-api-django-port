@@ -91,7 +91,6 @@ jobs:
     - name: Console output
       run: |
 
-      
         ls /home/runner/yandex-cloud/bin
         chmod +x /home/runner/yandex-cloud/bin/yc
         /home/runner/yandex-cloud/bin/yc --help
@@ -157,17 +156,12 @@ jobs:
           echo "DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}" >> .env
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
           echo "DSN=${{ secrets.DSN }}" >> .env
-          sudo chmod 644 .env
           sudo docker network create my_network
           sudo docker volume create static_data
-          sudo docker run -d --name redis -p 6379:6379 redis:alpine
-          sudo docker run -d --name worker --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }} sudo celery -A user_auth worker --loglevel=info
-          sudo docker run -d --name beat --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${{ github.sha }} sudo celery -A user_auth beat --loglevel=info
-          sudo docker run -d --name web --mount source=static_data,target=/app/staticfiles -p 8000:8000 --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }} sudo sh -c "python manage.py collectstatic --noinput && sudo gunicorn --workers=3 user_auth.wsgi:application --bind 0.0.0.0:8000"
-          sudo docker run -d --name nginx --mount source=static_data,target=/app/staticfiles -p 80:80 cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }}
-     
           
-
+          sudo docker run -d --name web --mount source=static_data,target=/app/staticfiles -p 8000:8000 --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }} sh -c "python manage.py collectstatic --noinput && gunicorn --workers=3 user_auth.wsgi:application --bind 0.0.0.0:8000"
+         
+          
     # - name: Login to Yandex Container Registry from ssh
     #   run: echo ${{ secrets.YC_OAUTH_TOKEN }} | sudo docker login -u oauth --password-stdin cr.yandex/${{ secrets.YC_CR_ID }}
 
