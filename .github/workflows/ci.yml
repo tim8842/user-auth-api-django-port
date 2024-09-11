@@ -158,8 +158,8 @@ jobs:
 
     - name: Remove networks
       run: |
-        if [ "$(sudo docker network ls -q)" ]; then
-          sudo docker network rm $(sudo docker network ls -q) &> /dev/null
+        if [ "$(sudo docker network ls --filter "type=custom" -q)" ]; then
+          sudo docker network rm $(sudo docker network ls --filter "type=custom" -q) &> /dev/null
         fi
 
     - name: Runs images
