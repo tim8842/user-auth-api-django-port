@@ -112,4 +112,5 @@ jobs:
         docker cr.yandex/${{ secrets.YC_CR_ID }}/nginx-image:${COMMIT_SHA}
         docker cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${COMMIT_SHA}
         docker cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${COMMIT_SHA}
+        
     
