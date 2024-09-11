@@ -128,70 +128,105 @@ jobs:
         key: ${{ secrets.KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         port: 22
+        script: |
+          echo ${{ secrets.YC_OAUTH_TOKEN }} | sudo docker login -u oauth --password-stdin cr.yandex/${{ secrets.YC_CR_ID }}
+          if [ "$(sudo docker ps -q)" ]; then
+            sudo docker kill $(sudo docker ps -q) &> /dev/null
+          fi
+          if [ "$(sudo docker ps -a -q)" ]; then
+            sudo docker rm $(sudo docker ps -a -q) &> /dev/null
+          fi
+          if [ "$(sudo docker images -q)" ]; then
+            sudo docker rmi -f $(sudo docker images -q) &> /dev/null
+          fi
+          if [ "$(sudo docker volume ls -q)" ]; then
+            sudo docker volume rm $(sudo docker volume ls -q) &> /dev/null
+          fi
+          if [ "$(sudo docker network ls --filter "type=custom" -q)" ]; then
+            sudo docker network rm $(sudo docker network ls --filter "type=custom" -q) &> /dev/null
+          fi
+          if [ -f ".env" ]; then
+            rm ".env"
+          fi
+          echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> .env
+          echo "EMAIL_PORT=${{ secrets.EMAIL_PORT }}" >> .env
+          echo "EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}" >> .env
+          echo "EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}" >> .env
+          echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
+          echo "DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "DSN=${{ secrets.DSN }}" >> .env
+          sudo docker network create my_network
+          sudo docker volume create static_data
+          sudo docker run -d --name redis -p 6379:6379 redis:alpine
+          sudo docker run -d --name worker --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }} celery -A user_auth worker --loglevel=info
+          sudo docker run -d --name beat --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${{ github.sha }} celery -A user_auth beat --loglevel=info
+          sudo docker run -d --name web --mount source=static_data,target=/app/staticfiles -p 8000:8000 --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }} sh -c "python manage.py collectstatic --noinput && gunicorn --workers=3 user_auth.wsgi:application --bind 0.0.0.0:8000"
+          sudo docker run -d --name nginx --mount source=static_data,target=/app/staticfiles -p 80:80 cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }}
+          
+    # - name: Login to Yandex Container Registry from ssh
+    #   run: echo ${{ secrets.YC_OAUTH_TOKEN }} | sudo docker login -u oauth --password-stdin cr.yandex/${{ secrets.YC_CR_ID }}
+
+    # - name: Stop containers
+    #   run: |
+    #     if [ "$(sudo docker ps -q)" ]; then
+    #       sudo docker kill $(sudo docker ps -q) &> /dev/null
+    #     fi
+
+    # - name: Remove containers
+    #   run: |
+    #     if [ "$(sudo docker ps -a -q)" ]; then
+    #       sudo docker rm $(sudo docker ps -a -q) &> /dev/null
+    #     fi
+
+    # - name: Remove images
+    #   run: |
+    #     if [ "$(sudo docker images -q)" ]; then
+    #       sudo docker rmi -f $(sudo docker images -q) &> /dev/null
+    #     fi
+
+    # - name: Remove volumes
+    #   run: |
+    #     if [ "$(sudo docker volume ls -q)" ]; then
+    #       sudo docker volume rm $(sudo docker volume ls -q) &> /dev/null
+    #     fi
+
+    # - name: Remove networks
+    #   run: |
+    #     if [ "$(sudo docker network ls --filter "type=custom" -q)" ]; then
+    #       sudo docker network rm $(sudo docker network ls --filter "type=custom" -q) &> /dev/null
+    #     fi
     
-    - name: Login to Yandex Container Registry from ssh
-      run: echo ${{ secrets.YC_OAUTH_TOKEN }} | sudo docker login -u oauth --password-stdin cr.yandex/${{ secrets.YC_CR_ID }}
+    # - name: Env forma
+    #   run: |
+    #     if [ -f ".env" ]; then
+    #       rm ".env"
+    #     fi
+    #     echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> .env
+    #     echo "EMAIL_PORT=${{ secrets.EMAIL_PORT }}" >> .env
+    #     echo "EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}" >> .env
+    #     echo "EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}" >> .env
+    #     echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
+    #     echo "DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}" >> .env
+    #     echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+    #     echo "DSN=${{ secrets.DSN }}" >> .env
 
-    - name: Stop containers
-      run: |
-        if [ "$(sudo docker ps -q)" ]; then
-          sudo docker kill $(sudo docker ps -q) &> /dev/null
-        fi
-
-    - name: Remove containers
-      run: |
-        if [ "$(sudo docker ps -a -q)" ]; then
-          sudo docker rm $(sudo docker ps -a -q) &> /dev/null
-        fi
-
-    - name: Remove images
-      run: |
-        if [ "$(sudo docker images -q)" ]; then
-          sudo docker rmi -f $(sudo docker images -q) &> /dev/null
-        fi
-
-    - name: Remove volumes
-      run: |
-        if [ "$(sudo docker volume ls -q)" ]; then
-          sudo docker volume rm $(sudo docker volume ls -q) &> /dev/null
-        fi
-
-    - name: Remove networks
-      run: |
-        if [ "$(sudo docker network ls --filter "type=custom" -q)" ]; then
-          sudo docker network rm $(sudo docker network ls --filter "type=custom" -q) &> /dev/null
-        fi
-    
-    - name: Env forma
-      run: |
-        if [ -f ".env" ]; then
-          rm ".env"
-        fi
-        echo "EMAIL_HOST=${{ secrets.EMAIL_HOST }}" >> .env
-        echo "EMAIL_PORT=${{ secrets.EMAIL_PORT }}" >> .env
-        echo "EMAIL_USE_TLS=${{ secrets.EMAIL_USE_TLS }}" >> .env
-        echo "EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}" >> .env
-        echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
-        echo "DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}" >> .env
-        echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
-        echo "DSN=${{ secrets.DSN }}" >> .env
-
-    - name: Pre Settings
-      run: |
-        sudo docker network create my_network
-        sudo docker volume create static_data
-    - name: Redis
-      run: sudo docker run -d --name redis -p 6379:6379 redis:alpine
+    # - name: Pre Settings
+    #   run: |
+    #     sudo docker network create my_network
+    #     sudo docker volume create static_data
+    # - name: Redis
+    #   run: sudo docker run -d --name redis -p 6379:6379 redis:alpine
       
-    - name: Worker
-      run: sudo docker run -d --name worker --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }} celery -A user_auth worker --loglevel=info
+    # - name: Worker
+    #   run: sudo docker run -d --name worker --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }} celery -A user_auth worker --loglevel=info
 
-    - name: Beat
-      run: sudo docker run -d --name beat --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${{ github.sha }} celery -A user_auth beat --loglevel=info
+    # - name: Beat
+    #   run: sudo docker run -d --name beat --mount source=static_data,target=/app/staticfiles --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-beat-worker:${{ github.sha }} celery -A user_auth beat --loglevel=info
 
-    - name: Web
-      run: sudo docker run -d --name web --mount source=static_data,target=/app/staticfiles -p 8000:8000 --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }} sh -c "python manage.py collectstatic --noinput && gunicorn --workers=3 user_auth.wsgi:application --bind 0.0.0.0:8000"
+    # - name: Web
+    #   run: sudo docker run -d --name web --mount source=static_data,target=/app/staticfiles -p 8000:8000 --env-file .env cr.yandex/${{ secrets.YC_CR_ID }}/web-image:${{ github.sha }} sh -c "python manage.py collectstatic --noinput && gunicorn --workers=3 user_auth.wsgi:application --bind 0.0.0.0:8000"
 
-    - name: Nginx
-      run: sudo docker run -d --name nginx --mount source=static_data,target=/app/staticfiles -p 80:80 cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }}
+    # - name: Nginx
+    #   run: sudo docker run -d --name nginx --mount source=static_data,target=/app/staticfiles -p 80:80 cr.yandex/${{ secrets.YC_CR_ID }}/nu-nginx-celery-worker:${{ github.sha }}
       
